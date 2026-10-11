@@ -1,0 +1,32 @@
+{
+  "name": "yerel",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Your localhost. Out in the world.",
+  "scripts": {
+    "dev": "tsx server/index.ts --dev",
+    "build": "next build",
+    "typecheck": "tsc -p tsconfig.typecheck.json --noEmit",
+    "test": "vitest run",
+    "lint": "next lint",
+    "start": "tsx server/index.ts --production",
+    "generate:icons": "node scripts/generate-icons.cjs"
+  },
+  "dependencies": {
+    "lucide-react": "^0.468.0",
+    "next": "14.2.30",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "^14.2.30",
+    "sharp": "^0.35.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}
