@@ -19,7 +19,7 @@ Local companion (127.0.0.1:3847)
 Cloudflare Quick Tunnel → temporary public HTTPS URL
 ```
 
-The website is independently deployable with Next.js/Vercel. It does not run commands or start a tunnel on the server. The workspace requests status on mount; authenticated access requires the current companion token. Hosting does not guarantee browser permission to access a loopback HTTP service.
+The website is independently deployable with Next.js/Vercel. It does not run commands or start a tunnel on the server. The workspace requests status on mount; authenticated access requires the current companion token. Next.js declares `local-network` and `loopback-network` in Permissions Policy. The frontend uses the literal loopback URL without a `targetAddressSpace` hint because current specifications distinguish loopback from local. These are browser opt-ins, not a bypass: modern Chromium/Edge still gates public-origin-to-loopback requests on user/enterprise Local Network Access permission.
 
 ## Companion API
 
@@ -46,6 +46,10 @@ Protected requests require a Bearer token. A supplied `Origin` must match the ex
 - Token changes or workspace unmount dispose the controller, cancel its polling timer, and suppress late callbacks. Tokens remain in React memory; a full reload or closing/reopening the workspace requires re-entry, not a new tunnel.
 
 Backend readiness separately uses local reachability checks (10-second request timeout) and a 30-second post-spawn deadline for a parsed URL and registered connection. These checks do not fetch the public URL. Graceful termination attempts an initial kill, then escalates after 1.5 seconds and reports failure if the child still does not exit.
+
+## Production browser boundary
+
+The deployed frontend-to-loopback path is inherently browser-dependent. Legacy Chromium PNA preflights are answered by the companion, but current Chromium/Edge Local Network Access permission is evaluated by the browser and can fail before the HTTP request reaches the companion. A reliable hosted mode would require an authenticated relay with a persistent outbound companion connection; no relay is included because it requires additional infrastructure and creates a separate public security boundary. The locally served website and foreground CLI remain the supported fallbacks when a browser profile denies local access.
 
 ## Foreground CLI
 

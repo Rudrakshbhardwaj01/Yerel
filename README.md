@@ -185,7 +185,7 @@ For the deployed site in this repository, start the companion with the productio
 npm run cli -- --origin https://tryyerel.vercel.app
 ```
 
-The companion answers Chromium/Edge Private Network Access preflights with `Access-Control-Allow-Private-Network: true` only for an allowlisted Origin. This header is required for an HTTPS website to request the HTTP loopback companion, but it does not grant browser permission by itself. Edge may show a local-network permission prompt or apply an enterprise/browser policy; allow the prompt for `tryyerel.vercel.app` if shown. The companion cannot bypass a browser policy that denies local-network access.
+The companion answers legacy Chromium Private Network Access preflights with `Access-Control-Allow-Private-Network: true` only for an allowlisted Origin. The deployed Next.js response opts into the `local-network` and `loopback-network` Permissions Policy features. The frontend uses the literal loopback URL; it does not set a `targetAddressSpace` hint because current specifications distinguish loopback from local. Modern Edge/Chromium uses Local Network Access permission in addition to these headers; the permission is granted by the browser, not by the companion. Allow the prompt for `tryyerel.vercel.app` if shown. The companion cannot bypass a browser or enterprise policy that denies local-network access.
 
 ## Security
 
@@ -209,7 +209,9 @@ Targets must use `localhost`, `127.0.0.1`, or `::1`; the companion also rejects 
 
 Do not share credentials, admin panels, debug endpoints, private data, or production services without application-level authorization. Temporary Quick Tunnel URLs are not a replacement for authentication, a firewall, or production hosting.
 
-Modern browsers may require local-network permission when an HTTPS-hosted website accesses a local HTTP companion. Yerel returns the required Private Network Access preflight header without weakening its exact-origin allowlist, but it does not disable browser security. If Edge still reports that loopback access is denied, allow local-network access for the site or use the locally served website/foreground CLI; an ordinary CORS header alone cannot override that browser decision.
+Modern browsers may require local-network permission when an HTTPS-hosted website accesses a local HTTP companion. Yerel supplies the standards hooks it can control—a Permissions Policy opt-in, the legacy PNA preflight header, and exact-origin CORS—but it does not disable browser security. If Edge still reports that loopback access is denied after the site is listed under allowed Local network sites, direct deployed-frontend-to-loopback access is not reliable in that browser profile. Use the locally served website or foreground CLI; an ordinary CORS header cannot override that browser decision.
+
+The repository does not currently include a hosted relay. A reliable browser-independent production mode would require a new authenticated relay service (or equivalent outbound WebSocket/WebRTC signaling infrastructure) so the companion makes an outbound connection instead of accepting a browser-to-loopback request. That introduces an always-available service, deployment/operating cost, relay authentication, and another public attack surface; it should not be silently substituted for the current local-first mode.
 
 ## Website and Vercel
 

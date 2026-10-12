@@ -20,6 +20,9 @@ async function companionRequest<T>(path: string, token: string, init: RequestIni
     const headers = new Headers(init.headers);
     headers.set('accept', 'application/json');
     if (token.trim()) headers.set('authorization', `Bearer ${token.trim()}`);
+    // 127.0.0.1 is already classified as loopback by Chromium. Do not set
+    // targetAddressSpace: "local": current specifications distinguish
+    // loopback from local, and a mismatched explicit hint can fail.
     const response = await fetch(`${COMPANION_ORIGIN}${path}`, { ...init, headers, cache: 'no-store', referrerPolicy: 'no-referrer', signal: controller.signal });
     const text = await response.text();
     let body: T & { error?: string } = {} as T & { error?: string };
