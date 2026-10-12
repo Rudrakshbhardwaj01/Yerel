@@ -98,4 +98,53 @@ describe('companion API', () => {
       expect(response.headers.get('access-control-allow-origin')).toBe('http://127.0.0.1:3000');
     } finally { await companion.close(); }
   });
+
+  it('supports an allowed production-origin private-network preflight', async () => {
+    const companion = createCompanion({ port: 0, token: 'production-origin-token', tunnel: new FakeTunnel(), origins: ['https://tryyerel.vercel.app'], log: () => {} });
+    const { port } = await companion.ready;
+    try {
+      const response = await fetch(`http://127.0.0.1:${port}/status`, {
+        method: 'OPTIONS',
+        headers: {
+          origin: 'https://tryyerel.vercel.app',
+          'access-control-request-method': 'GET',
+          'access-control-request-headers': 'authorization',
+          'access-control-request-private-network': 'true',
+        },
+      });
+      expect(response.status).toBe(204);
+      expect(response.headers.get('access-control-allow-origin')).toBe('https://tryyerel.vercel.app');
+      expect(response.headers.get('access-control-allow-methods')).toContain('GET');
+      expect(response.headers.get('access-control-allow-headers')?.toLowerCase()).toContain('authorization');
+      expect(response.headers.get('access-control-allow-private-network')).toBe('true');
+    } finally { await companion.close(); }
+  });
+
+  it('denies a production-origin preflight from an origin that is not allowlisted', async () => {
+    const companion = createCompanion({ port: 0, token: 'denied-production-token', tunnel: new FakeTunnel(), origins: ['https://tryyerel.vercel.app'], log: () => {} });
+    const { port } = await companion.ready;
+    try {
+      const response = await fetch(`http://127.0.0.1:${port}/status`, {
+        method: 'OPTIONS',
+        headers: {
+          origin: 'https://evil.example',
+          'access-control-request-method': 'GET',
+          'access-control-request-private-network': 'true',
+        },
+      });
+      expect(response.status).toBe(403);
+      expect(response.headers.get('access-control-allow-origin')).toBeNull();
+      expect(response.headers.get('access-control-allow-private-network')).toBeNull();
+    } finally { await companion.close(); }
+  });
+
+  it('allows authenticated production-origin status after the preflight contract', async () => {
+    const companion = createCompanion({ port: 0, token: 'production-status-token', tunnel: new FakeTunnel(), origins: ['https://tryyerel.vercel.app'], log: () => {} });
+    const { port } = await companion.ready;
+    try {
+      const response = await fetch(`http://127.0.0.1:${port}/status`, { headers: { origin: 'https://tryyerel.vercel.app', authorization: 'Bearer production-status-token' } });
+      expect(response.status).toBe(200);
+      expect(response.headers.get('access-control-allow-origin')).toBe('https://tryyerel.vercel.app');
+    } finally { await companion.close(); }
+  });
 });

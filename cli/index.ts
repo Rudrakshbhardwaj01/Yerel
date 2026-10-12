@@ -75,7 +75,16 @@ export function createCompanion(options: CompanionOptions = {}): Companion {
   async function handle(req: IncomingMessage, res: ServerResponse) {
     const origin = typeof req.headers.origin === 'string' ? req.headers.origin : undefined; if (origin && !origins.has(origin)) { json(res, 403, { error: 'Origin is not allowed.' }); return; }
     if (origin) { res.setHeader('access-control-allow-origin', origin); res.setHeader('vary', 'Origin'); }
-    if (req.method === 'OPTIONS') { res.setHeader('access-control-allow-methods', 'GET,POST,DELETE,OPTIONS'); res.setHeader('access-control-allow-headers', 'Authorization, Content-Type'); res.setHeader('access-control-max-age', '300'); res.statusCode = 204; res.end(); return; }
+    if (req.method === 'OPTIONS') {
+      res.setHeader('access-control-allow-methods', 'GET,POST,DELETE,OPTIONS');
+      res.setHeader('access-control-allow-headers', 'Authorization, Content-Type');
+      res.setHeader('access-control-max-age', '300');
+      res.setHeader('vary', 'Origin, Access-Control-Request-Method, Access-Control-Request-Headers, Access-Control-Request-Private-Network');
+      // Edge/Chromium sends this request header for HTTPS -> loopback requests.
+      // Opt in only after the exact Origin allowlist check above succeeds.
+      if (req.headers['access-control-request-private-network'] === 'true') res.setHeader('access-control-allow-private-network', 'true');
+      res.statusCode = 204; res.end(); return;
+    }
     const url = new URL(req.url ?? '/', `http://${host}`); const publicHealth = req.method === 'GET' && url.pathname === '/health';
     // Pairing is the one unauthenticated exchange: the token is supplied in the JSON body.
     const pairing = req.method === 'POST' && url.pathname === '/pair';

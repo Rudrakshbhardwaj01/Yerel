@@ -174,10 +174,18 @@ npm run cli -- --origin http://127.0.0.1:3000
 For a deployed website, substitute its exact origin (scheme, host, and port if non-default; no path or trailing slash):
 
 ```powershell
-npm run cli -- --origin https://your-vercel-domain.example
+npm run cli -- --origin https://tryyerel.vercel.app
 ```
 
 `http://127.0.0.1:3000`, `http://localhost:3000`, and a deployed HTTPS URL are different origins. Without configuration, both listed local origins are allowed. Environment origins and repeated `--origin` flags are combined; a nonempty configured list replaces the defaults. Include every origin you actually use. Do not use wildcard origins, bind the companion to `0.0.0.0`, or disable browser security.
+
+For the deployed site in this repository, start the companion with the production origin explicitly:
+
+```powershell
+npm run cli -- --origin https://tryyerel.vercel.app
+```
+
+The companion answers Chromium/Edge Private Network Access preflights with `Access-Control-Allow-Private-Network: true` only for an allowlisted Origin. This header is required for an HTTPS website to request the HTTP loopback companion, but it does not grant browser permission by itself. Edge may show a local-network permission prompt or apply an enterprise/browser policy; allow the prompt for `tryyerel.vercel.app` if shown. The companion cannot bypass a browser policy that denies local-network access.
 
 ## Security
 
@@ -201,7 +209,7 @@ Targets must use `localhost`, `127.0.0.1`, or `::1`; the companion also rejects 
 
 Do not share credentials, admin panels, debug endpoints, private data, or production services without application-level authorization. Temporary Quick Tunnel URLs are not a replacement for authentication, a firewall, or production hosting.
 
-Modern browsers may require local-network permission when an HTTPS-hosted website accesses a local HTTP companion. Yerel does not disable browser security. If the browser blocks the request, run the website locally or use the CLI directly.
+Modern browsers may require local-network permission when an HTTPS-hosted website accesses a local HTTP companion. Yerel returns the required Private Network Access preflight header without weakening its exact-origin allowlist, but it does not disable browser security. If Edge still reports that loopback access is denied, allow local-network access for the site or use the locally served website/foreground CLI; an ordinary CORS header alone cannot override that browser decision.
 
 ## Website and Vercel
 
