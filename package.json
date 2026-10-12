@@ -4,12 +4,14 @@
   "private": true,
   "description": "Your localhost. Out in the world.",
   "scripts": {
-    "dev": "tsx server/index.ts --dev",
+    "dev": "next dev",
+    "cli": "tsx cli/index.ts",
+    "cli:help": "tsx cli/index.ts --help",
     "build": "next build",
     "typecheck": "tsc -p tsconfig.typecheck.json --noEmit",
     "test": "vitest run",
     "lint": "next lint",
-    "start": "tsx server/index.ts --production",
+    "start": "next start",
     "generate:icons": "node scripts/generate-icons.cjs"
   },
   "dependencies": {

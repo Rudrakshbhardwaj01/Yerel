@@ -20,7 +20,7 @@ export function hasRegisteredConnection(output: string) {
   return /registered\s+(?:tunnel\s+)?connection/i.test(output.slice(-MAX_OUTPUT));
 }
 
-export function checkTargetReachable(target: LocalTarget, timeoutMs = 3000): Promise<void> {
+export function checkTargetReachable(target: LocalTarget, timeoutMs = 10_000): Promise<void> {
   return new Promise((resolve, reject) => {
     const client = target.protocol === 'https' ? httpsRequest : request;
     const req = client(target.url, { method: 'GET', timeout: timeoutMs, headers: { 'user-agent': 'Yerel/health-check' } }, (res) => { res.resume(); resolve(); });
